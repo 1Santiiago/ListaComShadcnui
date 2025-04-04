@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Delete, FilePenLine, Pen, PlusCircle } from "lucide-react";
+import { Delete, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -35,11 +35,13 @@ type Inputs = {
   name: string;
   price: number;
   quantidade: number;
+  produto?: string;
 };
 
 export default function Home() {
   const { register, handleSubmit, reset } = useForm<Inputs>();
   const [Produto, SetProdutos] = useState<ProdutoPros[]>([]);
+  const [filteredProduct, setFilteredProduct] = useState<ProdutoPros[]>([]);
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     const newProduct: ProdutoPros = {
@@ -49,11 +51,34 @@ export default function Home() {
     };
     SetProdutos([...Produto, newProduct]);
     reset();
+    console.log(data);
   };
 
   const handleDelete = (id: number) => {
     const updatedProdutos = Produto.filter((produto) => produto.id !== id);
     SetProdutos(updatedProdutos);
+
+    //atualizar a lista apois a exlcusao
+
+    const afterDelete = filteredProduct.filter((prod) => prod.id !== id);
+    setFilteredProduct(afterDelete);
+
+    if (afterDelete.length === 0) {
+      setFilteredProduct([git]);
+    }
+  };
+
+  const handleSearch = (produto: string) => {
+    console.log(produto);
+    if (produto.trim() === "") {
+      setFilteredProduct([]);
+    }
+
+    const produtFiltered = Produto.filter((prod) =>
+      prod.name.toLocaleLowerCase().includes(produto.toLocaleLowerCase())
+    );
+
+    setFilteredProduct(produtFiltered);
   };
 
   return (
@@ -63,11 +88,19 @@ export default function Home() {
       </div>
       <div className="flex justify-between">
         <h1 className="text-3xl">Listas de Compras</h1>
+        <form>
+          <Input
+            type="text"
+            placeholder="buscar..."
+            {...register("produto")}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </form>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle />
-              Adicionar Produtos
+              Produtos
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -116,20 +149,39 @@ export default function Home() {
             <TableHead className="text-center">Quantidades</TableHead>
           </TableHeader>
           <TableBody>
-            {Produto.map((e) => (
-              <TableRow key={e.id}>
-                <TableCell>{e.id}</TableCell>
-                <TableCell>{e.name}</TableCell>
-                <TableCell className="text-center">{e.quantidade}</TableCell>
-                <div className="flex my-3 gap-2 justify-center items-center">
-                  <Delete
-                    size={16}
-                    color="red"
-                    onClick={() => handleDelete(e.id)}
-                  />
-                </div>
-              </TableRow>
-            ))}
+            {filteredProduct.length === 0
+              ? Produto.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell>{e.id}</TableCell>
+                    <TableCell>{e.name}</TableCell>
+                    <TableCell className="text-center">
+                      {e.quantidade}
+                    </TableCell>
+                    <div className="flex my-3 gap-2 justify-center items-center">
+                      <Delete
+                        size={16}
+                        color="red"
+                        onClick={() => handleDelete(e.id)}
+                      />
+                    </div>
+                  </TableRow>
+                ))
+              : filteredProduct.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell>{e.id}</TableCell>
+                    <TableCell>{e.name}</TableCell>
+                    <TableCell className="text-center">
+                      {e.quantidade}
+                    </TableCell>
+                    <div className="flex my-3 gap-2 justify-center items-center">
+                      <Delete
+                        size={16}
+                        color="red"
+                        onClick={() => handleDelete(e.id)}
+                      />
+                    </div>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>
