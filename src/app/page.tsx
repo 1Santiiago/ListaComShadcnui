@@ -64,7 +64,8 @@ export default function Home() {
     setFilteredProduct(afterDelete);
 
     if (afterDelete.length === 0) {
-      setFilteredProduct([git]);
+      setFilteredProduct([]);
+      reset();
     }
   };
 
